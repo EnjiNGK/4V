@@ -57,25 +57,25 @@ export const Footer = () => (
       <div>
         <h4 className="font-serif-display text-lg mb-3">Contatti</h4>
         <ul className="space-y-2 text-sm text-white/70">
-          <li className="flex items-center gap-2"><Mail className="w-4 h-4" /> info@v4.it</li>
-          <li className="flex items-center gap-2"><Phone className="w-4 h-4" /> +39 000 000 000</li>
-          <li className="flex items-center gap-2"><MapPin className="w-4 h-4" /> Italia</li>
+          <li className="flex items-center gap-2"><Mail className="w-4 h-4" /> studio.v4@outlook.com</li>
+          <li className="flex items-center gap-2"><Phone className="w-4 h-4" /> +39 380 864 5012</li>
+          <li className="flex items-center gap-2"><MapPin className="w-4 h-4" /> via cascina restelli 18 limido comasco</li>
         </ul>
       </div>
     </div>
     <div className="border-t border-white/10">
       <div className="container py-6 text-[11px] text-white/50 flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
-          <span className="flex items-center gap-1.5"><BadgeCheck className="w-3.5 h-3.5 text-white/40" /> P.IVA da inserire</span>
+          <span className="flex items-center gap-1.5"><BadgeCheck className="w-3.5 h-3.5 text-white/40" /> Federico Volontè</span>
           <span className="text-white/20">·</span>
-          <span>REA da inserire</span>
+          <span>P.IVA 03849530138</span>
           <span className="text-white/20">·</span>
-          <span>SDI: da inserire</span>
+          <span>C.F. VLNFRC82L05B639E</span>
           <span className="text-white/20">·</span>
-          <span>PEC: da inserire</span>
+          <span>PEC: Federico.volonte@pec.it</span>
         </div>
         <div className="flex flex-col md:flex-row justify-between gap-2 pt-3 border-t border-white/5">
-          <span>© {new Date().getFullYear()} V4 — Vintage Vehicles Verified · Tutti i diritti riservati</span>
+          <span>© {new Date().getFullYear()} V4 — Vintage Vehicles Verified · da un'idea di Roberto Russo · Tutti i diritti riservati</span>
           <span>GDPR UE 2016/679 · D.Lgs. 196/2003 · AI Act UE 2024/1689 · Cod. Cons. D.Lgs. 206/2005</span>
         </div>
       </div>

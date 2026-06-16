@@ -15,9 +15,9 @@ const LegalLayout = ({ title, lastUpdate, children }: any) => (
 );
 
 export const Privacy = () => (
-  <LegalLayout title="Privacy Policy" lastUpdate="5 maggio 2026">
+  <LegalLayout title="Privacy Policy" lastUpdate="16 giugno 2026">
     <Section title="1. Titolare del trattamento">
-      <p>V4 (di seguito "Titolare"), con sede legale in Italia. Email: privacy@v4.it.</p>
+      <p>Federico Volontè (di seguito "Titolare"), con sede legale in via cascina restelli 18, Limido Comasco (CO). Email: studio.v4@outlook.com. PEC: Federico.volonte@pec.it.</p>
     </Section>
     <Section title="2. Base giuridica e finalità">
       <p>Trattiamo i dati personali ai sensi del Regolamento (UE) 2016/679 (GDPR), del D.Lgs. 196/2003 e ss.mm.ii. e in conformità ai provvedimenti del Garante per la Protezione dei Dati Personali. Finalità: gestione richieste di vendita/contatto, adempimenti contrattuali e fiscali, sicurezza del sito.</p>
@@ -41,7 +41,7 @@ export const Privacy = () => (
 );
 
 export const CookiePolicy = () => (
-  <LegalLayout title="Cookie Policy" lastUpdate="5 maggio 2026">
+  <LegalLayout title="Cookie Policy" lastUpdate="16 giugno 2026">
     <Section title="Cosa sono i cookie">
       <p>I cookie sono piccoli file di testo memorizzati sul tuo dispositivo. Questo sito utilizza esclusivamente cookie tecnici, conformemente al provvedimento del Garante Privacy del 10/06/2021 ("Linee guida cookie") e all'art. 122 del Codice Privacy.</p>
     </Section>
@@ -57,7 +57,7 @@ export const CookiePolicy = () => (
 );
 
 export const Terms = () => (
-  <LegalLayout title="Termini e Condizioni" lastUpdate="5 maggio 2026">
+  <LegalLayout title="Termini e Condizioni" lastUpdate="16 giugno 2026">
     <Section title="1. Oggetto">
       <p>Il sito v4.it è una vetrina informativa di veicoli storici e da collezione. Non costituisce offerta al pubblico ex art. 1336 c.c. La compravendita avviene esclusivamente in presenza, presso la sede o luogo concordato.</p>
     </Section>
@@ -77,9 +77,9 @@ export const Terms = () => (
 );
 
 export const LegalNotes = () => (
-  <LegalLayout title="Note Legali" lastUpdate="5 maggio 2026">
+  <LegalLayout title="Note Legali" lastUpdate="16 giugno 2026">
     <Section title="Identificazione">
-      <p>Sito gestito da V4. P.IVA, REA e dati di iscrizione da inserire a cura del titolare.</p>
+      <p>Sito gestito da Federico Volontè. Sede legale: via cascina restelli 18, Limido Comasco (CO). P.IVA 03849530138 - C.F. VLNFRC82L05B639E. PEC: Federico.volonte@pec.it.</p>
     </Section>
     <Section title="Proprietà intellettuale">
       <p>Tutti i contenuti, marchi, immagini e testi sono protetti da diritti di proprietà intellettuale ex L. 633/1941 e D.Lgs. 30/2005. Riproduzione vietata senza autorizzazione scritta.</p>
