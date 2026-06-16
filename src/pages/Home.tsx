@@ -1,13 +1,82 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Camera, Handshake, Star, ChevronDown, FileBadge, Award, Quote, CheckCircle2, ScrollText, KeyRound, MapPin, ExternalLink, Search, Car as CarIcon } from "lucide-react";
+import { ArrowRight, Camera, Handshake, Star, ChevronDown, FileBadge, Award, Quote, CheckCircle2, ScrollText, KeyRound, MapPin, ExternalLink, Search, Car as CarIcon, ShieldCheck, QrCode, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { CarCard, CarCardData } from "@/components/CarCard";
 import { motion } from "framer-motion";
 import heroCar from "@/assets/hero-car.jpg";
+import { useLanguage } from "@/lib/i18n";
+import { Seo } from "@/components/Seo";
+
+const REVIEWS_IT = [
+  { n: "Marco R.", c: "Collezionista — Milano", date: "12 marzo 2026", t: "Documentazione impeccabile sulla mia Alfa Giulia GTA. Ispezione su ponte, prova su strada, zero sorprese. Esperienza da casa d'aste." },
+  { n: "Sara M.", c: "Restauratrice — Modena", date: "28 febbraio 2026", t: "Foto dettagliatissime, anche del sottoscocca e del vano motore. Finalmente un portale serio per chi conosce davvero le auto storiche." },
+  { n: "Luca P.", c: "Acquirente Porsche 911 RS", date: "07 febbraio 2026", t: "Trattativa professionale e riservata, passaggio ASI gestito interamente da loro. Lo consiglio senza riserve a ogni collezionista." },
+];
+const REVIEWS_EN = [
+  { n: "Marco R.", c: "Collector — Milan", date: "March 12, 2026", t: "Impeccable documentation on my Alfa Giulia GTA. Lift inspection, test drive, zero surprises. Auction-house experience." },
+  { n: "Sara M.", c: "Restorer — Modena", date: "February 28, 2026", t: "Extremely detailed photos, including underbody and engine bay. Finally a serious portal for those who really know classic cars." },
+  { n: "Luca P.", c: "Porsche 911 RS buyer", date: "February 7, 2026", t: "Professional and confidential negotiation, ASI registration handled entirely by them. I recommend them without reservations to every collector." },
+];
+
+const ReviewCard = ({ r, verifiedLabel }: { r: { n: string; c: string; date: string; t: string }; verifiedLabel: string }) => (
+  <div className="bg-background p-9 md:p-10 relative flex flex-col h-full">
+    <Quote className="absolute top-6 right-6 w-12 h-12 text-foreground/[0.04]" strokeWidth={1} />
+    <div className="flex items-center gap-0.5 mb-5">
+      {Array.from({ length: 5 }).map((_, k) => (
+        <span key={k} className="w-5 h-5 grid place-items-center bg-[#00b67a]">
+          <Star className="w-3 h-3 fill-current text-white" strokeWidth={0} />
+        </span>
+      ))}
+      <span className="ml-2 hairline text-muted-foreground">{verifiedLabel}</span>
+    </div>
+    <p className="font-display text-lg md:text-xl leading-relaxed mb-6 italic flex-1">"{r.t}"</p>
+    <div className="pt-5 border-t border-border flex items-center justify-between">
+      <div>
+        <div className="hairline text-foreground">{r.n}</div>
+        <div className="text-xs text-muted-foreground mt-1">{r.c}</div>
+      </div>
+      <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{r.date}</div>
+    </div>
+  </div>
+);
+
+const MobileReviewsCarousel = ({ reviews, verifiedLabel, reviewLabel }: { reviews: typeof REVIEWS_IT; verifiedLabel: string; reviewLabel: string }) => {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setIdx((i) => (i + 1) % reviews.length), 6000);
+    return () => clearInterval(id);
+  }, [reviews.length]);
+  return (
+    <div className="md:hidden">
+      <div className="relative overflow-hidden border border-border bg-border">
+        <div className="flex transition-transform duration-700 ease-out" style={{ transform: `translateX(-${idx * 100}%)` }}>
+          {reviews.map((r) => (
+            <div key={r.n} className="w-full shrink-0">
+              <ReviewCard r={r} verifiedLabel={verifiedLabel} />
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="flex items-center justify-center gap-2 mt-5">
+        {reviews.map((_, i) => (
+          <button
+            key={i}
+            aria-label={`${reviewLabel} ${i + 1}`}
+            onClick={() => setIdx(i)}
+            className={`h-1.5 rounded-full transition-all ${i === idx ? "w-8 bg-foreground" : "w-1.5 bg-foreground/30"}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
 
 const Home = () => {
+  const { isEnglish } = useLanguage();
+  const reviews = isEnglish ? REVIEWS_EN : REVIEWS_IT;
+  const verifiedLabel = isEnglish ? "Verified" : "Verificata";
   const [featured, setFeatured] = useState<CarCardData[]>([]);
 
   useEffect(() => {
@@ -29,12 +98,27 @@ const Home = () => {
 
   return (
     <>
+      <Seo
+        title={isEnglish ? "V4 Vintage Verified — Classic & collectible cars certified on blockchain" : "V4 Vintage Verified — Auto storiche e da collezione certificate su blockchain"}
+        description={isEnglish ? "Curated selection of classic, youngtimer and collectible cars in Italy. Appraisals, documents and CertiShield Digital Vehicle Passport on blockchain." : "Selezione curata di auto storiche, youngtimer e da collezione in Italia. Perizie, documenti regolari e Digital Vehicle Passport CertiShield su blockchain."}
+        path="/"
+        image="/logo-v4.png"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "AutoDealer",
+          name: "V4 Vintage Verified",
+          url: "/",
+          logo: "/logo-v4.png",
+          areaServed: "IT",
+          priceRange: "€€€",
+        }}
+      />
       {/* HERO — full-bleed editorial */}
       <section className="relative min-h-[100svh] md:h-[92vh] md:min-h-[640px] w-full overflow-hidden bg-black text-white flex flex-col">
         <div className="absolute inset-0">
           <img
             src={heroCar}
-            alt="Vettura storica"
+            alt={isEnglish ? "Classic vehicle" : "Vettura storica"}
             width={1920}
             height={1080}
             className="w-full h-full object-cover object-center animate-ken-burns"
@@ -44,17 +128,6 @@ const Home = () => {
           <div className="hidden md:block absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
           {/* Mobile: heavy bottom scrim so text is fully readable */}
           <div className="md:hidden absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/95" />
-        </div>
-
-        {/* Top hairline meta bar (left mark only) */}
-        <div className="absolute top-0 inset-x-0 z-10 hidden md:block">
-          <div className="container flex items-center py-6 text-white/70">
-            <span className="hairline flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-brand-red" />
-              V4
-              <span className="w-1.5 h-1.5 rounded-full bg-brand-blue ml-1" />
-            </span>
-          </div>
         </div>
 
         {/* Center content */}
@@ -70,15 +143,16 @@ const Home = () => {
               <span className="italic font-normal">Vehicles. Verified.</span>
             </h1>
             <p className="text-[15px] md:text-lg text-white/85 max-w-xl font-light leading-relaxed mb-8 md:mb-10">
-              Veicoli di interesse storico e collezionistico, selezionati e periziati
-              dal Team del Perito Arbitro internazionale Federico Volontè.
+              {isEnglish
+                ? "Vehicles of historical and collector interest, selected and appraised by the Team of international Arbiter Surveyor Federico Volontè."
+                : "Veicoli di interesse storico e collezionistico, selezionati e periziati dal Team del Perito Arbitro internazionale Federico Volontè."}
             </p>
             <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-4 sm:gap-6">
               <Button asChild size="lg" className="rounded-none bg-white text-black hover:bg-white/90 px-8 h-12 w-full sm:w-auto justify-center">
-                <Link to="/catalogo">Vedi il catalogo <ArrowRight className="ml-3 w-4 h-4" /></Link>
+                <Link to="/catalogo">{isEnglish ? "View catalog" : "Vedi il catalogo"} <ArrowRight className="ml-3 w-4 h-4" /></Link>
               </Button>
               <Link to="/vendi" className="hairline text-white/85 hover:text-white border-b border-white/40 hover:border-white pb-1 transition-smooth self-center">
-                Invia la tua auto da pubblicare →
+                {isEnglish ? "Submit your car for publication →" : "Invia la tua auto da pubblicare →"}
               </Link>
             </div>
           </motion.div>
@@ -113,20 +187,20 @@ const Home = () => {
             <div>
               <div className="hairline text-muted-foreground mb-3 flex items-center gap-3">
                 <span className="w-6 h-px bg-brand-red" />
-                Selezione corrente
+                {isEnglish ? "Current selection" : "Selezione corrente"}
               </div>
-              <h2 className="font-display text-3xl md:text-5xl">Vetrina veicoli storici</h2>
+              <h2 className="font-display text-3xl md:text-5xl">{isEnglish ? "Classic vehicles showcase" : "Vetrina veicoli storici"}</h2>
             </div>
             <Button asChild variant="ghost" className="hidden md:inline-flex hairline">
-              <Link to="/catalogo">Tutto il catalogo <ArrowRight className="ml-2 w-4 h-4" /></Link>
+              <Link to="/catalogo">{isEnglish ? "Full catalog" : "Tutto il catalogo"} <ArrowRight className="ml-2 w-4 h-4" /></Link>
             </Button>
           </div>
           {featured.length === 0 ? (
             <div className="text-center py-20 border border-dashed border-border">
-              <p className="text-muted-foreground font-light">Catalogo in arrivo.</p>
+              <p className="text-muted-foreground font-light">{isEnglish ? "Catalog coming soon." : "Catalogo in arrivo."}</p>
             </div>
           ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 md:gap-8">
               {featured.map((c, i) => (
                 <motion.div
                   key={c.id}
@@ -142,7 +216,7 @@ const Home = () => {
           )}
           <div className="mt-10 text-center md:hidden">
             <Button asChild className="rounded-none bg-primary text-primary-foreground px-8 h-12">
-              <Link to="/catalogo">Vedi tutto il catalogo <ArrowRight className="ml-3 w-4 h-4" /></Link>
+              <Link to="/catalogo">{isEnglish ? "View full catalog" : "Vedi tutto il catalogo"} <ArrowRight className="ml-3 w-4 h-4" /></Link>
             </Button>
           </div>
         </div>
@@ -157,38 +231,38 @@ const Home = () => {
           <div className="lg:col-span-7">
             <div className="hairline text-background/60 mb-5 flex items-center gap-3">
               <span className="w-6 h-px bg-brand-red" />
-              Chi siamo — il significato di V4
+              {isEnglish ? "About — the meaning of V4" : "Chi siamo — il significato di V4"}
               <span className="w-1.5 h-1.5 rounded-full bg-brand-blue" />
             </div>
             <h2 className="font-serif-display font-light text-4xl md:text-6xl lg:text-7xl leading-[1.02] mb-6">
-              Quattro <em className="text-background/60">V</em>.<br />
-              Un'unica visione.
+              {isEnglish ? <>Four <em className="text-background/60">V's</em>.<br />One vision.</> : <>Quattro <em className="text-background/60">V</em>.<br />Un'unica visione.</>}
             </h2>
             <p className="text-background/70 font-light text-lg leading-relaxed mb-8 max-w-xl">
-              V4 non è un semplice portale di veicoli usati. È ricerca, selezione, perizia e
-              divulgazione di pezzi che rappresentano stile, design e qualità artigianale dei decenni passati.
+              {isEnglish
+                ? "V4 is not a simple used car portal. It is research, selection, appraisal and storytelling of pieces that represent style, design and craftsmanship of decades past."
+                : "V4 non è un semplice portale di veicoli usati. È ricerca, selezione, perizia e divulgazione di pezzi che rappresentano stile, design e qualità artigianale dei decenni passati."}
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button asChild size="lg" className="rounded-none bg-background text-foreground hover:bg-background/90 px-8 h-12">
-                <Link to="/chi-siamo">Scopri le 4 V <ArrowRight className="ml-3 w-4 h-4" /></Link>
+                <Link to="/chi-siamo">{isEnglish ? "Discover the 4 V's" : "Scopri le 4 V"} <ArrowRight className="ml-3 w-4 h-4" /></Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="rounded-none border-background/30 bg-transparent text-background hover:bg-background hover:text-foreground px-8 h-12">
-                <Link to="/vendi">Proponi la tua auto</Link>
+                <Link to="/vendi">{isEnglish ? "Sell your car" : "Proponi la tua auto"}</Link>
               </Button>
             </div>
           </div>
 
           <div className="lg:col-span-5 grid grid-cols-2 gap-px bg-background/10 border border-background/10">
             {[
-              { k: "Volontè", a: "red", d: "Perito Arbitro internazionale" },
-              { k: "Vintage", a: "blue", d: "Pezzi rari, storia e firma" },
-              { k: "Vehicles", a: "red", d: "Auto · moto · aerei storici" },
-              { k: "Verified", a: "blue", d: "Periziati dal Team V4" },
+              { k: "Volontè", a: "red", d: isEnglish ? "International Arbiter Surveyor" : "Perito Arbitro internazionale" },
+              { k: "Vintage", a: "blue", d: isEnglish ? "Rare pieces, history and signature" : "Pezzi rari, storia e firma" },
+              { k: "Vehicles", a: "red", d: isEnglish ? "Classic cars · motorcycles · aircraft" : "Auto · moto · aerei storici" },
+              { k: "Verified", a: "blue", d: isEnglish ? "Appraised by the V4 Team" : "Periziati dal Team V4" },
             ].map((v) => (
               <div key={v.k} className="bg-foreground p-7 md:p-8">
                 <div className="hairline text-background/60 flex items-center gap-2 mb-3">
                   <span className={`w-1.5 h-1.5 rounded-full ${v.a === "red" ? "bg-brand-red" : "bg-brand-blue"}`} />
-                  V di…
+                  {isEnglish ? "V for…" : "V di…"}
                 </div>
                 <div className="font-serif-display text-2xl md:text-3xl mb-2">{v.k}</div>
                 <div className="text-xs text-background/60 font-light">{v.d}</div>
@@ -202,7 +276,7 @@ const Home = () => {
       <section className="relative py-24 md:py-32 bg-background overflow-hidden">
         {/* decorative oversized type */}
         <div aria-hidden className="absolute -top-10 right-0 font-serif-display text-[18rem] leading-none text-foreground/[0.03] select-none pointer-events-none hidden md:block">
-          metodo
+          {isEnglish ? "method" : "metodo"}
         </div>
 
         <div className="container relative">
@@ -211,16 +285,16 @@ const Home = () => {
             <div className="lg:col-span-5 lg:sticky lg:top-28 lg:self-start">
               <div className="hairline text-muted-foreground mb-5 flex items-center gap-3">
                 <span className="w-6 h-px bg-brand-blue" />
-                Il nostro metodo
+                {isEnglish ? "Our method" : "Il nostro metodo"}
                 <span className="w-1.5 h-1.5 rounded-full bg-brand-red" />
               </div>
               <h2 className="font-display text-4xl md:text-5xl lg:text-6xl leading-[1.05] mb-6">
-                Tre principi.<br />
-                <em className="text-foreground/60">Nessun compromesso.</em>
+                {isEnglish ? <>Three principles.<br /><em className="text-foreground/60">No compromise.</em></> : <>Tre principi.<br /><em className="text-foreground/60">Nessun compromesso.</em></>}
               </h2>
               <p className="text-muted-foreground font-light leading-relaxed mb-8">
-                Trattiamo ogni vettura come un pezzo di storia: la documentiamo, la fotografiamo,
-                la raccontiamo. E poi te la mostriamo di persona — perché un'auto storica non si compra al buio.
+                {isEnglish
+                  ? "We treat every car as a piece of history: we document it, we photograph it, we tell its story. And then we show it to you in person — because a classic car is not bought blindly."
+                  : "Trattiamo ogni vettura come un pezzo di storia: la documentiamo, la fotografiamo, la raccontiamo. E poi te la mostriamo di persona — perché un'auto storica non si compra al buio."}
               </p>
               <div className="flex items-center gap-4 pt-6 border-t border-border">
                 <div className="flex -space-x-1">
@@ -228,7 +302,7 @@ const Home = () => {
                   <span className="w-2.5 h-2.5 rounded-full bg-brand-blue ring-2 ring-background" />
                   <span className="w-2.5 h-2.5 rounded-full bg-foreground ring-2 ring-background" />
                 </div>
-                <span className="hairline text-muted-foreground">Standard V4</span>
+                <span className="hairline text-muted-foreground">{isEnglish ? "V4 Standard" : "Standard V4"}</span>
               </div>
             </div>
 
@@ -238,25 +312,37 @@ const Home = () => {
                 {
                   n: "01",
                   icon: ScrollText,
-                  t: "Documentazione completa",
-                  d: "Libretti originali, passaggi di proprietà tracciati, certificazioni ASI / FMI quando disponibili. Ogni vettura ha una storia verificabile.",
-                  bullets: ["Libretto e foglio complementare", "Storico passaggi e tagliandi", "Certificazione ASI / FMI"],
+                  t: isEnglish ? "Complete documentation" : "Documentazione completa",
+                  d: isEnglish
+                    ? "Original logbooks, tracked ownership transfers, ASI / FMI certifications when available. Every car has a verifiable history."
+                    : "Libretti originali, passaggi di proprietà tracciati, certificazioni ASI / FMI quando disponibili. Ogni vettura ha una storia verificabile.",
+                  bullets: isEnglish
+                    ? ["Logbook and supplementary form", "Ownership and service history", "ASI / FMI certification"]
+                    : ["Libretto e foglio complementare", "Storico passaggi e tagliandi", "Certificazione ASI / FMI"],
                   accent: "red",
                 },
                 {
                   n: "02",
                   icon: Camera,
-                  t: "Fotografia professionale",
-                  d: "Fino a 40 immagini ad alta risoluzione: esterni, interni, vano motore, telaio, dettagli e imperfezioni. Trasparenza prima di tutto.",
-                  bullets: ["Esterni 360° e dettagli", "Vano motore e sottoscocca", "Imperfezioni dichiarate"],
+                  t: isEnglish ? "Professional photography" : "Fotografia professionale",
+                  d: isEnglish
+                    ? "Up to 40 high-resolution images: exteriors, interiors, engine bay, chassis, details and imperfections. Transparency above all."
+                    : "Fino a 40 immagini ad alta risoluzione: esterni, interni, vano motore, telaio, dettagli e imperfezioni. Trasparenza prima di tutto.",
+                  bullets: isEnglish
+                    ? ["360° exteriors and details", "Engine bay and underbody", "Declared imperfections"]
+                    : ["Esterni 360° e dettagli", "Vano motore e sottoscocca", "Imperfezioni dichiarate"],
                   accent: "blue",
                 },
                 {
                   n: "03",
                   icon: KeyRound,
-                  t: "Vendita in presenza",
-                  d: "Visita la vettura nel nostro showroom, ispeziona ogni dettaglio, prova la guida. La fiducia nasce dall'incontro, non da un click.",
-                  bullets: ["Ispezione su ponte sollevatore", "Prova su strada concordata", "Trattativa riservata"],
+                  t: isEnglish ? "In-person sale" : "Vendita in presenza",
+                  d: isEnglish
+                    ? "Visit the car in our showroom, inspect every detail, take it for a drive. Trust is built in person, not with a click."
+                    : "Visita la vettura nel nostro showroom, ispeziona ogni dettaglio, prova la guida. La fiducia nasce dall'incontro, non da un click.",
+                  bullets: isEnglish
+                    ? ["Lift inspection", "Agreed test drive", "Confidential negotiation"]
+                    : ["Ispezione su ponte sollevatore", "Prova su strada concordata", "Trattativa riservata"],
                   accent: "red",
                 },
               ].map((v, i) => (
@@ -294,27 +380,64 @@ const Home = () => {
             </div>
           </div>
 
-          {/* Trust strip — premium numbers row */}
-          <div className="mt-20 border-t border-b border-border">
-            <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 divide-border">
+        </div>
+      </section>
+
+      {/* PASSAPORTO DIGITALE — CertiShield (KNOBS) */}
+      <section className="py-24 md:py-28 bg-foreground text-background relative overflow-hidden">
+        <div aria-hidden className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(currentColor 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
+        <div className="container relative">
+          <div className="grid lg:grid-cols-12 gap-12 items-center">
+            <div className="lg:col-span-5">
+              <div className="hairline text-background/60 mb-4 flex items-center gap-3">
+                <span className="w-6 h-px bg-brand-red" />
+                {isEnglish ? "CertiShield · Blockchain DVP" : "CertiShield · DVP su blockchain"}
+              </div>
+              <h2 className="font-display text-4xl md:text-5xl leading-tight mb-5">
+                {isEnglish ? (
+                  <>Digital Vehicle Passport<br /><em className="text-background/55">on blockchain</em></>
+                ) : (
+                  <>Passaporto digitale<br /><em className="text-background/55">su blockchain</em></>
+                )}
+              </h2>
+              <p className="text-background/70 font-light leading-relaxed mb-8">
+                {isEnglish
+                  ? "Through our partnership with CertiShield by KNOBS, each certified car receives an immutable Digital Vehicle Passport: appraisals, restorations, documents and key photos notarized on blockchain and verifiable via QR — for life."
+                  : "Grazie alla partnership con CertiShield by KNOBS, ogni auto certificata riceve un Digital Vehicle Passport immutabile: perizie, restauri, documenti e foto chiave notarizzati su blockchain e verificabili con un QR — per sempre."}
+              </p>
+              <Button asChild variant="outline" className="rounded-none border-background/40 bg-transparent text-background hover:bg-background hover:text-foreground">
+                <Link to="/certificazione-digitale">
+                  {isEnglish ? "How CertiShield works" : "Come funziona CertiShield"} <ArrowRight className="ml-2 w-4 h-4" />
+                </Link>
+              </Button>
+            </div>
+            <div className="lg:col-span-7 grid sm:grid-cols-3 gap-px bg-background/10 border border-background/15">
               {[
-                { n: "100%", l: "Documenti verificati", s: "Su ogni vettura" },
-                { n: "48h", l: "Risposta proposte", s: "Giorni lavorativi" },
-                { n: "ASI · FMI", l: "Certificazioni", s: "Quando disponibili" },
-                { n: "40", l: "Foto per vettura", s: "Alta risoluzione" },
-              ].map((s, i) => (
-                <motion.div
-                  key={s.l}
-                  initial={{ opacity: 0, y: 16 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: i * 0.08 }}
-                  className="p-7 md:p-10 group hover:bg-secondary/40 transition-smooth"
-                >
-                  <div className="font-serif-display text-4xl md:text-5xl mb-2 group-hover:tracking-wide transition-smooth">{s.n}</div>
-                  <div className="hairline text-foreground mb-1">{s.l}</div>
-                  <div className="text-xs text-muted-foreground font-light">{s.s}</div>
-                </motion.div>
+                {
+                  icon: ShieldCheck,
+                  t: "01",
+                  s: isEnglish ? "Blockchain certified" : "Certificato su blockchain",
+                  d: isEnglish ? "Immutable record by an authorized professional" : "Registrazione immutabile da professionista autorizzato",
+                },
+                {
+                  icon: Link2,
+                  t: "02",
+                  s: isEnglish ? "Full vehicle history" : "Storia completa del veicolo",
+                  d: isEnglish ? "Appraisals, restorations, events, documents" : "Perizie, restauri, eventi, documenti",
+                },
+                {
+                  icon: QrCode,
+                  t: "03",
+                  s: isEnglish ? "QR public verification" : "Verifica pubblica via QR",
+                  d: isEnglish ? "Transferable to the next owner" : "Trasferibile al nuovo proprietario",
+                },
+              ].map((item) => (
+                <div key={item.t} className="bg-foreground p-6 md:p-8 border border-transparent hover:border-background/20 transition-smooth">
+                  <item.icon className="w-7 h-7 text-brand-red mb-4" strokeWidth={1.25} />
+                  <div className="font-mono text-xs text-background/50 mb-1">{item.t}</div>
+                  <div className="font-display text-lg mb-2">{item.s}</div>
+                  <div className="text-xs text-background/55 font-light">{item.d}</div>
+                </div>
               ))}
             </div>
           </div>
@@ -327,7 +450,7 @@ const Home = () => {
         <div aria-hidden className="absolute -top-32 -left-40 w-[36rem] h-[36rem] rounded-full bg-brand-blue/20 blur-3xl pointer-events-none" />
         <div aria-hidden className="absolute -bottom-32 -right-40 w-[36rem] h-[36rem] rounded-full bg-brand-red/20 blur-3xl pointer-events-none" />
         <div aria-hidden className="absolute right-0 top-1/2 -translate-y-1/2 font-serif-display text-[18rem] leading-none text-background/[0.04] select-none pointer-events-none hidden lg:block">
-          Vendere
+          {isEnglish ? "Sell" : "Vendere"}
         </div>
 
         <div className="container relative">
@@ -335,33 +458,35 @@ const Home = () => {
             <div className="md:col-span-7">
               <div className="hairline text-background/60 mb-5 flex items-center gap-3">
                 <span className="w-6 h-px bg-brand-red" />
-                Vendere con V4
+                {isEnglish ? "Sell with V4" : "Vendere con V4"}
                 <span className="w-1.5 h-1.5 rounded-full bg-brand-blue" />
               </div>
               <h2 className="font-serif-display font-light text-4xl md:text-6xl lg:text-7xl leading-[1] mb-6">
-                Hai un'auto storica<br /><em className="text-background/60">da affidarci?</em>
+                {isEnglish ? <>Do you have a classic car<br /><em className="text-background/60">to entrust to us?</em></> : <>Hai un'auto storica<br /><em className="text-background/60">da affidarci?</em></>}
               </h2>
               <p className="text-background/75 font-light text-lg mb-8 leading-relaxed max-w-xl">
-                Compila il modulo dettagliato e invia fino a 40 fotografie. Valutiamo
-                ogni proposta con cura e ti ricontattiamo entro <strong className="text-background">48 ore lavorative</strong>.
-                Se serve, <span className="text-background border-b border-brand-red">la perizia la facciamo noi</span>.
+                {isEnglish ? (
+                  <>Fill out the detailed form and send up to 40 photos. We carefully evaluate every proposal and get back to you within <strong className="text-background">48 working hours</strong>. If needed, <span className="text-background border-b border-brand-red">we handle the appraisal ourselves</span>.</>
+                ) : (
+                  <>Compila il modulo dettagliato e invia fino a 40 fotografie. Valutiamo ogni proposta con cura e ti ricontattiamo entro <strong className="text-background">48 ore lavorative</strong>. Se serve, <span className="text-background border-b border-brand-red">la perizia la facciamo noi</span>.</>
+                )}
               </p>
               <div className="flex flex-wrap gap-3">
                 <Button asChild size="lg" className="rounded-none bg-brand-red text-white hover:bg-brand-red/90 px-8 h-12">
-                  <Link to="/vendi">Proponi la tua auto <ArrowRight className="ml-3 w-4 h-4" /></Link>
+                  <Link to="/vendi">{isEnglish ? "Sell your car" : "Proponi la tua auto"} <ArrowRight className="ml-3 w-4 h-4" /></Link>
                 </Button>
                 <Button asChild size="lg" variant="outline" className="rounded-none border-background/30 bg-transparent text-background hover:bg-background hover:text-foreground px-8 h-12">
-                  <Link to="/contatti">Parla con noi</Link>
+                  <Link to="/contatti">{isEnglish ? "Talk to us" : "Parla con noi"}</Link>
                 </Button>
               </div>
             </div>
 
             <div className="md:col-span-5 grid grid-cols-2 gap-px bg-background/10 border border-background/15">
               {[
-                { n: "01", t: "Compila", d: "Dati completi e foto", a: "red" },
-                { n: "02", t: "Valutiamo", d: "Entro 48h lavorative", a: "blue" },
-                { n: "03", t: "Periziamo", d: "Tecnica e ASI / FMI", a: "red" },
-                { n: "04", t: "Vendiamo", d: "In presenza, riservato", a: "blue" },
+                { n: "01", t: isEnglish ? "Submit" : "Compila", d: isEnglish ? "Full data and photos" : "Dati completi e foto", a: "red" },
+                { n: "02", t: isEnglish ? "We evaluate" : "Valutiamo", d: isEnglish ? "Within 48 working hours" : "Entro 48h lavorative", a: "blue" },
+                { n: "03", t: isEnglish ? "We appraise" : "Periziamo", d: isEnglish ? "Technical and ASI / FMI" : "Tecnica e ASI / FMI", a: "red" },
+                { n: "04", t: isEnglish ? "We sell" : "Vendiamo", d: isEnglish ? "In person, confidential" : "In presenza, riservato", a: "blue" },
               ].map((s) => (
                 <div key={s.n} className="bg-foreground p-5 md:p-6">
                   <div className={`font-serif-display text-3xl mb-2 ${s.a === "red" ? "text-brand-red" : "text-brand-blue"}`}>{s.n}</div>
@@ -381,9 +506,9 @@ const Home = () => {
             <div>
               <div className="hairline text-muted-foreground mb-3 flex items-center gap-3">
                 <span className="w-6 h-px bg-brand-red" />
-                Recensioni verificate
+                {isEnglish ? "Verified reviews" : "Recensioni verificate"}
               </div>
-              <h2 className="font-display text-4xl md:text-5xl">La voce dei collezionisti</h2>
+              <h2 className="font-display text-4xl md:text-5xl">{isEnglish ? "The voice of collectors" : "La voce dei collezionisti"}</h2>
             </div>
 
             {/* Trustpilot summary card */}
@@ -407,44 +532,24 @@ const Home = () => {
               </div>
               <div className="text-xs leading-tight">
                 <div className="font-medium">Trustpilot</div>
-                <div className="text-muted-foreground">142 recensioni</div>
+                <div className="text-muted-foreground">{isEnglish ? "142 reviews" : "142 recensioni"}</div>
               </div>
               <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-smooth" />
             </a>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-px bg-border border border-border">
-            {[
-              { n: "Marco R.", c: "Collezionista — Milano", date: "12 marzo 2026", t: "Documentazione impeccabile sulla mia Alfa Giulia GTA. Ispezione su ponte, prova su strada, zero sorprese. Esperienza da casa d'aste." },
-              { n: "Sara M.", c: "Restauratrice — Modena", date: "28 febbraio 2026", t: "Foto dettagliatissime, anche del sottoscocca e del vano motore. Finalmente un portale serio per chi conosce davvero le auto storiche." },
-              { n: "Luca P.", c: "Acquirente Porsche 911 RS", date: "07 febbraio 2026", t: "Trattativa professionale e riservata, passaggio ASI gestito interamente da loro. Lo consiglio senza riserve a ogni collezionista." },
-            ].map((r, i) => (
+          <MobileReviewsCarousel reviews={reviews} verifiedLabel={verifiedLabel} reviewLabel={isEnglish ? "Review" : "Recensione"} />
+
+          <div className="hidden md:grid md:grid-cols-3 gap-px bg-border border border-border">
+            {reviews.map((r, i) => (
               <motion.div
                 key={r.n}
                 initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.08 }}
-                className="bg-background p-9 md:p-10 relative flex flex-col"
               >
-                <Quote className="absolute top-6 right-6 w-12 h-12 text-foreground/[0.04]" strokeWidth={1} />
-                {/* Trustpilot green stars */}
-                <div className="flex items-center gap-0.5 mb-5">
-                  {Array.from({ length: 5 }).map((_, k) => (
-                    <span key={k} className="w-5 h-5 grid place-items-center bg-[#00b67a]">
-                      <Star className="w-3 h-3 fill-current text-white" strokeWidth={0} />
-                    </span>
-                  ))}
-                  <span className="ml-2 hairline text-muted-foreground">Verificata</span>
-                </div>
-                <p className="font-display text-lg md:text-xl leading-relaxed mb-6 italic flex-1">"{r.t}"</p>
-                <div className="pt-5 border-t border-border flex items-center justify-between">
-                  <div>
-                    <div className="hairline text-foreground">{r.n}</div>
-                    <div className="text-xs text-muted-foreground mt-1">{r.c}</div>
-                  </div>
-                  <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{r.date}</div>
-                </div>
+                <ReviewCard r={r} verifiedLabel={verifiedLabel} />
               </motion.div>
             ))}
           </div>
@@ -456,7 +561,7 @@ const Home = () => {
               rel="noopener noreferrer"
               className="hairline text-muted-foreground hover:text-foreground border-b border-border hover:border-foreground pb-1 transition-smooth inline-flex items-center gap-2"
             >
-              Leggi tutte le recensioni su Trustpilot <ExternalLink className="w-3.5 h-3.5" />
+              {isEnglish ? "Read all reviews on Trustpilot" : "Leggi tutte le recensioni su Trustpilot"} <ExternalLink className="w-3.5 h-3.5" />
             </a>
           </div>
         </div>

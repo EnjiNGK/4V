@@ -14,17 +14,20 @@ import CarDetail from "@/pages/CarDetail";
 import Sell from "@/pages/Sell";
 import Contact from "@/pages/Contact";
 import ChiSiamo from "@/pages/ChiSiamo";
+import CertificazioneDigitale from "@/pages/CertificazioneDigitale";
 import Auth from "@/pages/Auth";
 import { Privacy, CookiePolicy, Terms, LegalNotes } from "@/pages/Legal";
 import AdminLayout from "@/pages/admin/AdminLayout";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminCars from "@/pages/admin/AdminCars";
 import AdminCarEdit from "@/pages/admin/AdminCarEdit";
+import AdminCertiShield from "@/pages/admin/AdminCertiShield";
 import AdminRequests from "@/pages/admin/AdminRequests";
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "@/components/ScrollToTop";
 import { motion } from "framer-motion";
 import { LanguageProvider } from "@/lib/i18n";
+import { HelmetProvider } from "react-helmet-async";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +53,7 @@ const PublicShell = () => {
               <Route path="/vendi" element={<Sell />} />
               <Route path="/contatti" element={<Contact />} />
               <Route path="/chi-siamo" element={<ChiSiamo />} />
+              <Route path="/certificazione-digitale" element={<CertificazioneDigitale />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/cookie" element={<CookiePolicy />} />
@@ -68,26 +72,29 @@ const PublicShell = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <LanguageProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <ScrollToTop />
-          <AuthProvider>
-            <Routes>
-              <Route path="/admin" element={<AdminLayout />}>
-                <Route index element={<AdminDashboard />} />
-                <Route path="auto" element={<AdminCars />} />
-                <Route path="auto/:id" element={<AdminCarEdit />} />
-                <Route path="richieste" element={<AdminRequests />} />
-              </Route>
-              <Route path="*" element={<PublicShell />} />
-            </Routes>
-          </AuthProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </LanguageProvider>
+    <HelmetProvider>
+      <LanguageProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <ScrollToTop />
+            <AuthProvider>
+              <Routes>
+                <Route path="/admin" element={<AdminLayout />}>
+                  <Route index element={<AdminDashboard />} />
+                  <Route path="auto" element={<AdminCars />} />
+                  <Route path="auto/:id" element={<AdminCarEdit />} />
+                  <Route path="certishield" element={<AdminCertiShield />} />
+                  <Route path="richieste" element={<AdminRequests />} />
+                </Route>
+                <Route path="*" element={<PublicShell />} />
+              </Routes>
+            </AuthProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </LanguageProvider>
+    </HelmetProvider>
   </QueryClientProvider>
 );
 

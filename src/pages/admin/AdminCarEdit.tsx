@@ -128,7 +128,27 @@ const AdminCarEdit = () => {
               <F label="Proprietari precedenti"><Input type="number" value={car.previous_owners ?? ""} onChange={(e) => set("previous_owners", e.target.value)} /></F>
               <F label="Località"><Input value={car.location ?? ""} onChange={(e) => set("location", e.target.value)} /></F>
               <F label="VIN"><Input value={car.vin ?? ""} onChange={(e) => set("vin", e.target.value)} /></F>
-              <F label="URL Brochure PDF"><Input type="url" placeholder="https://…/scheda.pdf" value={car.brochure_url ?? ""} onChange={(e) => set("brochure_url", e.target.value)} /></F>
+              <F label="Brochure PDF">
+                <div className="space-y-2">
+                  <Input type="url" placeholder="URL brochure (oppure carica file qui sotto)" value={car.brochure_url ?? ""} onChange={(e) => set("brochure_url", e.target.value)} />
+                  <label className="flex items-center justify-between gap-2 border border-dashed border-border rounded px-3 py-2 cursor-pointer hover:border-accent text-xs">
+                    <span className="truncate">{isNew ? "Salva prima l'auto" : "Carica PDF brochure"}</span>
+                    <Upload className="w-4 h-4" />
+                    <input type="file" accept="application/pdf" className="hidden" disabled={isNew} onChange={async (e) => {
+                      const f = e.target.files?.[0]; if (!f) return;
+                      const path = `${id}/brochure-${crypto.randomUUID()}-${f.name.replace(/[^a-zA-Z0-9.\-_]/g,"_")}`;
+                      const { error: upErr } = await supabase.storage.from("cars").upload(path, f, { contentType: "application/pdf" });
+                      if (upErr) return toast.error(upErr.message);
+                      const { data } = supabase.storage.from("cars").getPublicUrl(path);
+                      set("brochure_url", data.publicUrl);
+                      toast.success("Brochure caricata — ricordati di salvare");
+                    }} />
+                  </label>
+                  {car.brochure_url && (
+                    <a href={car.brochure_url} target="_blank" rel="noreferrer" className="text-xs text-accent underline truncate block">Apri brochure attuale</a>
+                  )}
+                </div>
+              </F>
             </Grid>
           </Card>
 
@@ -138,6 +158,28 @@ const AdminCarEdit = () => {
               <F label="Note perizia"><Textarea rows={3} value={car.inspection_notes ?? ""} onChange={(e) => set("inspection_notes", e.target.value)} /></F>
             </div>
           </Card>
+
+          <Card title="Passaporto digitale CertiShield (blockchain)">
+            <div className="space-y-3">
+              <F label="URL pubblico del DVP CertiShield">
+                <Input
+                  type="url"
+                  placeholder="https://certishield.knobs.it/passport/..."
+                  value={car.certishield_url ?? ""}
+                  onChange={(e) => set("certishield_url", e.target.value)}
+                />
+              </F>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Incolla qui il link pubblico del Digital Vehicle Passport rilasciato da CertiShield (KNOBS) per questa vettura. Quando presente, nella scheda auto compare il box con QR e link al passaporto blockchain. Se vuoto, viene mostrato un box informativo "in preparazione".
+              </p>
+              {car.certishield_url && (
+                <a href={car.certishield_url} target="_blank" rel="noreferrer" className="text-xs text-accent underline truncate block">
+                  Apri passaporto attuale ↗
+                </a>
+              )}
+            </div>
+          </Card>
+
         </div>
 
         <div className="space-y-6">

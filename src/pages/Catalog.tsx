@@ -1,3 +1,4 @@
+import { Seo } from "@/components/Seo";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { CarCard, CarCardData } from "@/components/CarCard";
@@ -8,8 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { FUELS, TRANSMISSIONS, BODIES, ERAS, CONDITIONS, fmtPrice, fmtKm } from "@/lib/format";
 import { Search, SlidersHorizontal, X } from "lucide-react";
+import { useLanguage } from "@/lib/i18n";
 
 const Catalog = () => {
+  const { isEnglish } = useLanguage();
   const [cars, setCars] = useState<CarCardData[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
@@ -86,10 +89,15 @@ const Catalog = () => {
 
   return (
     <div className="container py-10 md:py-16">
+      <Seo
+        title={isEnglish ? "Catalog of classic cars for sale | V4 Vintage Verified" : "Catalogo auto storiche in vendita | V4 Vintage Verified"}
+        description={isEnglish ? "Browse our catalog of classic, youngtimer and collectible cars verified by V4 and certified on blockchain with CertiShield." : "Sfoglia il catalogo di auto storiche, youngtimer e da collezione verificate da V4 e certificate su blockchain con CertiShield."}
+        path="/catalogo"
+      />
       <div className="mb-8">
-        <div className="text-xs uppercase tracking-[0.3em] text-accent font-semibold mb-3">Catalogo</div>
-        <h1 className="font-serif-display text-4xl md:text-6xl mb-2">Le nostre auto storiche</h1>
-        <p className="text-muted-foreground">{filtered.length} {filtered.length === 1 ? "vettura disponibile" : "vetture disponibili"}</p>
+        <div className="text-xs uppercase tracking-[0.3em] text-accent font-semibold mb-3">{isEnglish ? "Catalog" : "Catalogo"}</div>
+        <h1 className="font-serif-display text-4xl md:text-6xl mb-2">{isEnglish ? "Our classic cars" : "Le nostre auto storiche"}</h1>
+        <p className="text-muted-foreground">{filtered.length} {isEnglish ? (filtered.length === 1 ? "vehicle available" : "vehicles available") : (filtered.length === 1 ? "vettura disponibile" : "vetture disponibili")}</p>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8">
@@ -97,43 +105,43 @@ const Catalog = () => {
         <aside className={`lg:w-72 lg:block ${showFilters ? "block" : "hidden"}`}>
           <div className="bg-card rounded-lg p-6 border border-border shadow-card sticky top-24">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-serif-display text-xl">Filtri</h3>
+              <h3 className="font-serif-display text-xl">{isEnglish ? "Filters" : "Filtri"}</h3>
               <Button variant="ghost" size="sm" onClick={reset}><X className="w-4 h-4 mr-1" />Reset</Button>
             </div>
             <div className="space-y-5">
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 block">Cerca</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 block">{isEnglish ? "Search" : "Cerca"}</label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Marca, modello..." className="pl-9" />
+                  <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={isEnglish ? "Make, model..." : "Marca, modello..."} className="pl-9" />
                 </div>
               </div>
-              <FilterSelect label="Epoca" value={era} onChange={setEra} options={ERAS.map((e) => e.label)} />
-              <FilterSelect label="Carrozzeria" value={body} onChange={setBody} options={BODIES} />
-              <FilterSelect label="Carburante" value={fuel} onChange={setFuel} options={FUELS} />
-              <FilterSelect label="Cambio" value={transmission} onChange={setTransmission} options={TRANSMISSIONS} />
-              <FilterSelect label="Stato vettura" value={condition} onChange={setCondition} options={CONDITIONS} />
+              <FilterSelect label={isEnglish ? "Era" : "Epoca"} value={era} onChange={setEra} options={ERAS.map((e) => e.label)} />
+              <FilterSelect label={isEnglish ? "Body" : "Carrozzeria"} value={body} onChange={setBody} options={BODIES} />
+              <FilterSelect label={isEnglish ? "Fuel" : "Carburante"} value={fuel} onChange={setFuel} options={FUELS} />
+              <FilterSelect label={isEnglish ? "Transmission" : "Cambio"} value={transmission} onChange={setTransmission} options={TRANSMISSIONS} />
+              <FilterSelect label={isEnglish ? "Condition" : "Stato vettura"} value={condition} onChange={setCondition} options={CONDITIONS} />
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 block">Prezzo: {fmtPrice(priceMin)} – {fmtPrice(priceMax)}</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 block">{isEnglish ? "Price" : "Prezzo"}: {fmtPrice(priceMin)} – {fmtPrice(priceMax)}</label>
                 <Slider min={0} max={500000} step={1000} value={[priceMin, priceMax]} onValueChange={(v) => { setPriceMin(v[0]); setPriceMax(v[1]); }} />
               </div>
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 block">Anno: {yearMin} – {yearMax}</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 block">{isEnglish ? "Year" : "Anno"}: {yearMin} – {yearMax}</label>
                 <Slider min={1900} max={new Date().getFullYear()} step={1} value={[yearMin, yearMax]} onValueChange={(v) => { setYearMin(v[0]); setYearMax(v[1]); }} />
               </div>
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 block">Km max: {fmtKm(kmMax)}</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 block">{isEnglish ? "Max km" : "Km max"}: {fmtKm(kmMax)}</label>
                 <Slider min={0} max={500000} step={5000} value={[kmMax]} onValueChange={(v) => setKmMax(v[0])} />
               </div>
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 block">Potenza min: {powerMin} CV</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 block">{isEnglish ? "Min power" : "Potenza min"}: {powerMin} {isEnglish ? "HP" : "CV"}</label>
                 <Slider min={0} max={800} step={10} value={[powerMin]} onValueChange={(v) => setPowerMin(v[0])} />
               </div>
               <div className="pt-3 border-t border-border space-y-3">
-                <FilterToggle label="Perizia disponibile" checked={onlyInspection} onChange={setOnlyInspection} />
-                <FilterToggle label="Documenti regolari" checked={onlyDocuments} onChange={setOnlyDocuments} />
-                <FilterToggle label="Matching numbers" checked={onlyMatching} onChange={setOnlyMatching} />
-                <FilterToggle label="Con brochure PDF" checked={onlyBrochure} onChange={setOnlyBrochure} />
+                <FilterToggle label={isEnglish ? "Appraisal available" : "Perizia disponibile"} checked={onlyInspection} onChange={setOnlyInspection} />
+                <FilterToggle label={isEnglish ? "Documents in order" : "Documenti regolari"} checked={onlyDocuments} onChange={setOnlyDocuments} />
+                <FilterToggle label={isEnglish ? "Matching numbers" : "Matching numbers"} checked={onlyMatching} onChange={setOnlyMatching} />
+                <FilterToggle label={isEnglish ? "With PDF brochure" : "Con brochure PDF"} checked={onlyBrochure} onChange={setOnlyBrochure} />
               </div>
             </div>
           </div>
@@ -142,34 +150,34 @@ const Catalog = () => {
         <div className="flex-1">
           <div className="flex items-center justify-between gap-3 mb-6">
             <Button variant="outline" size="sm" className="lg:hidden" onClick={() => setShowFilters(!showFilters)}>
-              <SlidersHorizontal className="w-4 h-4 mr-2" /> Filtri
+              <SlidersHorizontal className="w-4 h-4 mr-2" /> {isEnglish ? "Filters" : "Filtri"}
             </Button>
             <Select value={sort} onValueChange={setSort}>
               <SelectTrigger className="w-56 ml-auto"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="newest">Più recenti</SelectItem>
-                <SelectItem value="price-asc">Prezzo crescente</SelectItem>
-                <SelectItem value="price-desc">Prezzo decrescente</SelectItem>
-                <SelectItem value="km-asc">Meno km</SelectItem>
-                <SelectItem value="year-asc">Anno più antico</SelectItem>
-                <SelectItem value="year-desc">Anno più recente</SelectItem>
+                <SelectItem value="newest">{isEnglish ? "Newest" : "Più recenti"}</SelectItem>
+                <SelectItem value="price-asc">{isEnglish ? "Price ascending" : "Prezzo crescente"}</SelectItem>
+                <SelectItem value="price-desc">{isEnglish ? "Price descending" : "Prezzo decrescente"}</SelectItem>
+                <SelectItem value="km-asc">{isEnglish ? "Lowest mileage" : "Meno km"}</SelectItem>
+                <SelectItem value="year-asc">{isEnglish ? "Oldest year" : "Anno più antico"}</SelectItem>
+                <SelectItem value="year-desc">{isEnglish ? "Newest year" : "Anno più recente"}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {loading ? (
-            <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-5 md:gap-6">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="aspect-[4/3] rounded-2xl bg-muted animate-pulse" />
+                <div key={i} className="aspect-[4/3] rounded-xl md:rounded-2xl bg-muted animate-pulse" />
               ))}
             </div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-24 border-2 border-dashed border-border rounded-2xl">
               <Search className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-              <p className="text-muted-foreground">Nessuna auto trovata. Prova a modificare i filtri.</p>
+              <p className="text-muted-foreground">{isEnglish ? "No cars found. Try adjusting the filters." : "Nessuna auto trovata. Prova a modificare i filtri."}</p>
             </div>
           ) : (
-            <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-5 md:gap-6">
               {filtered.map((c) => <CarCard key={c.id} car={c} />)}
             </div>
           )}
@@ -185,7 +193,7 @@ const FilterSelect = ({ label, value, onChange, options }: any) => (
     <Select value={value} onValueChange={onChange}>
       <SelectTrigger><SelectValue /></SelectTrigger>
       <SelectContent>
-        <SelectItem value="all">Tutti</SelectItem>
+        <SelectItem value="all">{typeof window !== "undefined" && document.documentElement.lang === "en" ? "All" : "Tutti"}</SelectItem>
         {options.map((o: string) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
       </SelectContent>
     </Select>

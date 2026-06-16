@@ -22,7 +22,9 @@ export const CookieBanner = () => {
         <div className="flex-1">
           <h4 className="font-serif-display text-lg mb-1">Cookie & privacy</h4>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Utilizziamo solo cookie tecnici necessari al funzionamento del sito. Nessun tracker pubblicitario o di profilazione. Conforme GDPR (UE 2016/679) e provvedimento Garante 10/06/2021.{" "}
+            Usiamo solo tecnologie tecniche necessarie (preferenza lingua, consenso banner, eventuale sessione area riservata
+            tramite Supabase in <span className="font-mono text-[10px]">localStorage</span>). Nessun tracker pubblicitario o
+            analytics di terze parti. GDPR (UE 2016/679) e provvedimento Garante 10/06/2021.{" "}
             <Link to="/cookie" className="underline">Cookie Policy</Link>
           </p>
           <div className="flex gap-2 mt-3">

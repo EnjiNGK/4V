@@ -1,3 +1,4 @@
+import { Seo } from "@/components/Seo";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Phone, Mail, MapPin, Clock, ArrowRight, Calendar, MessageCircle, Instagram, ShieldCheck, Car, KeyRound, Send, Loader2 } from "lucide-react";
@@ -8,7 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
 import { z } from "zod";
 import { toast } from "sonner";
-import { sendEmail, EMAILJS } from "@/lib/emailjs";
+import { sendEmail, EMAILJS, SITE_NOTIFY_EMAIL } from "@/lib/emailjs";
+import { OWNER_INFO, OWNER_MAPS_URL } from "@/lib/ownerInfo";
+import { buildTeamContactEmail } from "@/lib/emailLayouts";
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
@@ -48,21 +51,29 @@ const Contact = () => {
     }
     setSending(true);
     try {
+      const { message, message_html } = buildTeamContactEmail({
+        name: parsed.data.name,
+        email: parsed.data.email,
+        phone: parsed.data.phone || "—",
+        subject: parsed.data.subject,
+        body: parsed.data.message,
+      });
       await sendEmail(EMAILJS.contactTemplateId, {
         from_name: parsed.data.name,
         from_email: parsed.data.email,
         phone: parsed.data.phone || "—",
-        subject: parsed.data.subject,
-        message: parsed.data.message,
+        subject: `[V4 · Contatti] ${parsed.data.subject}`,
+        message,
+        message_html,
         reply_to: parsed.data.email,
-        to_email: "studio.v4@outlook.com",
+        to_email: SITE_NOTIFY_EMAIL,
       });
       setSent(true);
       setForm({ name: "", email: "", phone: "", subject: "", message: "" });
       toast.success("Messaggio inviato. Ti risponderemo entro 24h.");
     } catch (err: any) {
       console.error(err);
-      toast.error("Invio non riuscito. Scrivi direttamente a studio.v4@outlook.com");
+      toast.error(`Invio non riuscito. Scrivi direttamente a ${OWNER_INFO.pec}`);
     } finally {
       setSending(false);
     }
@@ -70,6 +81,11 @@ const Contact = () => {
 
   return (
     <>
+      <Seo
+        title="Contatti — V4 Vintage Verified | Perizie e auto storiche"
+        description="Contatta V4 Vintage Verified per perizie, valutazioni e compravendita di auto storiche e da collezione. Compravendita esclusivamente in presenza."
+        path="/contatti"
+      />
       {/* HERO */}
       <section className="relative bg-foreground text-background overflow-hidden">
         <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: "radial-gradient(currentColor 1px, transparent 1px)", backgroundSize: "22px 22px" }} />
@@ -81,7 +97,7 @@ const Contact = () => {
           <motion.div {...fadeUp} transition={{ duration: 0.7 }}>
             <div className="hairline text-background/60 mb-6 flex items-center gap-3">
               <span className="w-6 h-px bg-brand-red" />
-              Contatti — Limido Comasco
+              Contatti — Fenegrò (CO)
               <span className="w-2 h-2 rounded-full bg-brand-blue ml-2" />
             </div>
             <h1 className="font-serif-display font-light text-5xl md:text-7xl lg:text-8xl leading-[0.95] mb-8 max-w-4xl">
@@ -95,10 +111,10 @@ const Contact = () => {
 
             <div className="mt-12 flex flex-wrap items-center gap-3">
               <Button asChild size="lg" className="rounded-none bg-background text-foreground hover:bg-background/90 px-8 h-12">
-                <a href="tel:+393808645012"><Phone className="w-4 h-4 mr-3" />Chiama ora</a>
+                <a href={`tel:${OWNER_INFO.phoneE164}`}><Phone className="w-4 h-4 mr-3" />Chiama ora</a>
               </Button>
               <Button asChild size="lg" className="rounded-none bg-[#25D366] text-white hover:bg-[#20bd5a] px-8 h-12">
-                <a href="https://wa.me/393808645012" target="_blank" rel="noopener noreferrer"><MessageCircle className="w-4 h-4 mr-3" />WhatsApp</a>
+                <a href={`https://wa.me/${OWNER_INFO.phoneE164.replace(/^\+/, "")}`} target="_blank" rel="noopener noreferrer"><MessageCircle className="w-4 h-4 mr-3" />WhatsApp</a>
               </Button>
             </div>
           </motion.div>
@@ -185,9 +201,9 @@ const Contact = () => {
             {/* INFO RAIL */}
             <motion.div {...fadeUp} transition={{ duration: 0.7, delay: 0.1 }} className="lg:col-span-5 space-y-5">
               {[
-                { icon: Mail, t: "studio.v4@outlook.com", s: "Risposta entro 24h", href: "mailto:studio.v4@outlook.com", accent: "red" },
-                { icon: Phone, t: "+39 380 864 5012", s: "Lun–Sab · 9:00 → 19:00", href: "tel:+393808645012", accent: "blue" },
-                { icon: MapPin, t: "V4", s: "via cascina restelli 18 limido comasco", href: "https://www.google.com/maps/search/?api=1&query=via+cascina+restelli+18+limido+comasco", accent: "red" },
+                { icon: Mail, t: OWNER_INFO.pec, s: "PEC — risposta entro 24h", href: `mailto:${OWNER_INFO.pec}`, accent: "red" },
+                { icon: Phone, t: OWNER_INFO.phoneDisplay, s: "Lun–Sab · 9:00 → 19:00", href: `tel:${OWNER_INFO.phoneE164}`, accent: "blue" },
+                { icon: MapPin, t: OWNER_INFO.addressZipCity, s: OWNER_INFO.addressStreet, href: OWNER_MAPS_URL, accent: "red" },
               ].map((c) => (
                 <a key={c.t} href={c.href} className={`flex gap-5 p-6 bg-card border border-border border-l-4 ${c.accent === "red" ? "border-l-brand-red" : "border-l-brand-blue"} hover:bg-secondary/40 transition-smooth group`}>
                   <c.icon className="w-6 h-6 text-foreground/70 mt-1 shrink-0" strokeWidth={1.25} />
@@ -206,10 +222,10 @@ const Contact = () => {
                     <span className="w-2 h-2 rounded-full bg-brand-red" />
                     Showroom — Su appuntamento
                   </div>
-                  <div className="font-display text-3xl mb-1">V4</div>
-                  <div className="text-background/70 font-light mb-5">Lun–Sab · 9:00 → 19:00</div>
+                  <div className="font-display text-3xl mb-1">V4 — {OWNER_INFO.addressZipCity}</div>
+                  <div className="text-background/70 font-light mb-5">{OWNER_INFO.fullAddress} · Lun–Sab · 9:00 → 19:00</div>
                   <div className="flex gap-3 flex-wrap">
-                    <a href="https://www.google.com/maps/search/?api=1&query=via+cascina+restelli+18+limido+comasco" target="_blank" rel="noopener noreferrer" className="hairline text-background/80 border-b border-background/30 hover:border-background pb-1 inline-flex items-center gap-2">
+                    <a href={OWNER_MAPS_URL} target="_blank" rel="noopener noreferrer" className="hairline text-background/80 border-b border-background/30 hover:border-background pb-1 inline-flex items-center gap-2">
                       Apri su Maps <ArrowRight className="w-3.5 h-3.5" />
                     </a>
                     <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="hairline text-background/80 border-b border-background/30 hover:border-background pb-1 inline-flex items-center gap-2">

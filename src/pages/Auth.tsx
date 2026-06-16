@@ -6,9 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Lock } from "lucide-react";
 import { toast } from "sonner";
+import { SITE_NOTIFY_EMAIL } from "@/lib/emailjs";
 
 const Auth = () => {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(SITE_NOTIFY_EMAIL);
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -19,7 +20,14 @@ const Auth = () => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) {
-      toast.error(error.message);
+      const m = (error.message || "").toLowerCase();
+      const generic =
+        m.includes("invalid") || m.includes("credentials") || m.includes("wrong") || error.status === 400;
+      toast.error(
+        generic
+          ? "Accesso non riuscito. Verifica email e password, oppure che l'account sia attivo."
+          : error.message
+      );
       return;
     }
     toast.success("Accesso effettuato");

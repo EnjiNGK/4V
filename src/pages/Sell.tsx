@@ -1,3 +1,4 @@
+import { Seo } from "@/components/Seo";
 import { useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { FUELS, TRANSMISSIONS, CONDITIONS } from "@/lib/format";
+import { buildTeamSellEmail } from "@/lib/emailLayouts";
 import { toast } from "sonner";
 import { Upload, X, CheckCircle2, Car, ShieldCheck, FileText } from "lucide-react";
 import { motion } from "framer-motion";
@@ -87,12 +89,11 @@ const Sell = () => {
       }
       const { error } = await supabase.from("listing_requests").insert({ ...parsed.data, image_urls: urls, brochure_file_url: brochureFileUrl } as any);
       if (error) throw error;
-      // notify V4 via EmailJS (free)
       try {
-        const { sendEmail, EMAILJS } = await import("@/lib/emailjs");
-        await sendEmail(EMAILJS.sellTemplateId, {
-          from_name: parsed.data.full_name,
-          from_email: parsed.data.email,
+        const { sendEmail, EMAILJS, SITE_NOTIFY_EMAIL } = await import("@/lib/emailjs");
+        const sellFields = {
+          full_name: parsed.data.full_name,
+          email: parsed.data.email,
           phone: parsed.data.phone,
           city: parsed.data.city || "—",
           brand: parsed.data.brand,
@@ -102,7 +103,7 @@ const Sell = () => {
           mileage_km: parsed.data.mileage_km,
           fuel: parsed.data.fuel,
           transmission: parsed.data.transmission,
-          asking_price_eur: parsed.data.asking_price_eur || "—",
+          asking_price_eur: parsed.data.asking_price_eur ?? "—",
           has_inspection: parsed.data.has_inspection ? "Sì" : "No (perizia da fare)",
           has_documents: parsed.data.has_documents ? "Sì" : "No",
           has_brochure: parsed.data.has_brochure ? "Sì" : "No (la realizziamo noi)",
@@ -111,8 +112,17 @@ const Sell = () => {
           description: parsed.data.description || "—",
           photos_count: urls.length,
           photos_urls: urls.join("\n"),
+        };
+        const { message, message_html } = buildTeamSellEmail(sellFields);
+        await sendEmail(EMAILJS.sellTemplateId, {
+          from_name: parsed.data.full_name,
+          from_email: parsed.data.email,
+          ...sellFields,
+          subject: `[V4 · Proposta] ${parsed.data.brand} ${parsed.data.model} — ${parsed.data.year}`,
+          message,
+          message_html,
           reply_to: parsed.data.email,
-          to_email: "info@v4.it",
+          to_email: SITE_NOTIFY_EMAIL,
         });
       } catch (mailErr) { console.warn("EmailJS:", mailErr); }
       setDone(true);
@@ -137,6 +147,11 @@ const Sell = () => {
 
   return (
     <>
+      <Seo
+        title="Proponi la tua auto storica | V4 Vintage Verified"
+        description="Vuoi vendere o far valutare la tua auto storica o da collezione? Proponila al team V4 Vintage Verified: perizia, selezione e pubblicazione con Digital Vehicle Passport su blockchain."
+        path="/vendi"
+      />
       {/* HERO header */}
       <section className="bg-foreground text-background py-20 md:py-28 relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(currentColor 1px, transparent 1px)", backgroundSize: "20px 20px" }} />

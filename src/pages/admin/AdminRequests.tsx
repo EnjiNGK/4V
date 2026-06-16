@@ -7,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { fmtKm, fmtPrice } from "@/lib/format";
+import { OWNER_INFO } from "@/lib/ownerInfo";
+import { buildClientAcceptanceEmail, buildClientRejectionEmail } from "@/lib/emailLayouts";
 import { toast } from "sonner";
 import { Mail, Phone, ChevronDown, ChevronUp, Trash2, CheckCircle2, X, Loader2 } from "lucide-react";
 
@@ -47,7 +49,6 @@ const AdminRequests = () => {
     load();
   };
 
-  // ───────── PUBLISH: create car + email
   const openPublish = (r: any) => {
     setPublishTarget(r);
     setPublishPrice(r.asking_price_eur ? String(r.asking_price_eur) : "");
@@ -59,7 +60,6 @@ const AdminRequests = () => {
     if (!price || price <= 0) return toast.error("Inserisci un prezzo di vendita valido");
     setPublishing(r.id);
     try {
-      // 1) Create car as published
       const carPayload: any = {
         brand: r.brand,
         model: r.model,
@@ -85,7 +85,6 @@ const AdminRequests = () => {
       const { data: car, error: carErr } = await supabase.from("cars").insert(carPayload).select().single();
       if (carErr) throw carErr;
 
-      // 2) Copy images from request into car_images
       if (r.image_urls?.length) {
         const rows = r.image_urls.map((url: string, i: number) => ({
           car_id: car.id,
@@ -96,23 +95,26 @@ const AdminRequests = () => {
         await supabase.from("car_images").insert(rows);
       }
 
-      // 3) Mark request published
       await supabase.from("listing_requests").update({ status: "published" }).eq("id", r.id);
 
-      // 4) Send acceptance email via EmailJS (free)
       try {
         const { sendEmail, EMAILJS } = await import("@/lib/emailjs");
+        const listingUrl = `${window.location.origin}/auto/${car.id}`;
+        const { message, message_html } = buildClientAcceptanceEmail({
+          fullName: r.full_name,
+          brand: r.brand,
+          model: r.model,
+          year: r.year,
+          priceEur: price,
+          listingUrl,
+        });
         await sendEmail(EMAILJS.contactTemplateId, {
           to_email: r.email,
-          reply_to: "info@v4.it",
+          reply_to: OWNER_INFO.pec,
           from_name: "V4 — Vintage Vehicles Verified",
-          subject: `La tua ${r.brand} ${r.model} è stata accettata`,
-          message:
-            `Ciao ${r.full_name},\n\n` +
-            `Ti confermiamo che la tua ${r.brand} ${r.model} (${r.year}) è stata accettata e pubblicata nel nostro catalogo V4.\n` +
-            `Prezzo di pubblicazione: € ${price.toLocaleString("it-IT")}\n\n` +
-            `Scheda online: ${window.location.origin}/auto/${car.id}\n\n` +
-            `Per qualsiasi informazione siamo a disposizione.\n— Team V4`,
+          subject: `La tua ${r.brand} ${r.model} è online nel catalogo V4`,
+          message,
+          message_html,
         });
       } catch (e) {
         console.warn("email send failed", e);
@@ -129,7 +131,6 @@ const AdminRequests = () => {
     }
   };
 
-  // ───────── REJECT: dialog + reason + email
   const confirmReject = async () => {
     if (!rejectTarget) return;
     if (rejectReason.trim().length < 10) return toast.error("Inserisci una motivazione (min 10 caratteri)");
@@ -138,17 +139,20 @@ const AdminRequests = () => {
       await supabase.from("listing_requests").update({ status: "rejected", admin_notes: rejectReason }).eq("id", rejectTarget.id);
       try {
         const { sendEmail, EMAILJS } = await import("@/lib/emailjs");
+        const { message, message_html } = buildClientRejectionEmail({
+          fullName: rejectTarget.full_name,
+          brand: rejectTarget.brand,
+          model: rejectTarget.model,
+          year: rejectTarget.year,
+          reason: rejectReason,
+        });
         await sendEmail(EMAILJS.contactTemplateId, {
           to_email: rejectTarget.email,
-          reply_to: "info@v4.it",
+          reply_to: OWNER_INFO.pec,
           from_name: "V4 — Vintage Vehicles Verified",
-          subject: `Esito proposta: ${rejectTarget.brand} ${rejectTarget.model}`,
-          message:
-            `Ciao ${rejectTarget.full_name},\n\n` +
-            `Ti ringraziamo per averci proposto la tua ${rejectTarget.brand} ${rejectTarget.model} (${rejectTarget.year}).\n` +
-            `Dopo attenta valutazione, in questo momento non possiamo accoglierla nel nostro catalogo per la seguente motivazione:\n\n` +
-            `${rejectReason}\n\n` +
-            `Restiamo a tua disposizione per future proposte.\n— Team V4`,
+          subject: `Aggiornamento sulla tua proposta — ${rejectTarget.brand} ${rejectTarget.model}`,
+          message,
+          message_html,
         });
       } catch (e) {
         console.warn("email send failed", e);

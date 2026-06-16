@@ -1,5 +1,9 @@
 import emailjs from "@emailjs/browser";
 
+export const SITE_NOTIFY_EMAIL =
+  (import.meta.env.VITE_NOTIFY_EMAIL as string | undefined)?.trim() ||
+  "studio.v4@outlook.com";
+
 export const EMAILJS = {
   publicKey: "0n4YD-IOky7NozXof",
   serviceId: "service_4dxft8m",
